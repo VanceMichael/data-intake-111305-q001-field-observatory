@@ -1,0 +1,17 @@
+[
+  {
+    "name": "new_manifest_before_old_chunk",
+    "situation": "二代清单先到，一代内容后到",
+    "observable": "二代缺块不因收到旧块而闭合"
+  },
+  {
+    "name": "reclaim_after_disconnect",
+    "situation": "两名接收者遇到断线与租约交接",
+    "observable": "仅当前持有者能够发布，已验块可重用"
+  },
+  {
+    "name": "bad_digest",
+    "situation": "长度一致但内容摘要不符",
+    "observable": "留下损坏证据，不能归档"
+  }
+]

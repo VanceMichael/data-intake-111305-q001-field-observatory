@@ -1,0 +1,210 @@
+{
+  "identity_fields": [
+    "station",
+    "day",
+    "generation"
+  ],
+  "source_records": [
+    {
+      "station": "ridge-a",
+      "day": "2026-11-10",
+      "generation": 2,
+      "chunks": [
+        {
+          "name": "a",
+          "path": "/chunks/a",
+          "sha256": "272b13e1be1a615f124541c4574aebeb709e41335083adcacd3d3e4e8bffc275"
+        },
+        {
+          "name": "b",
+          "path": "/chunks/b",
+          "sha256": "45a974786e891354b0953aef01336998f8f5cd22867c3117d52a118b92d125b5"
+        }
+      ],
+      "window_seconds": 20
+    },
+    {
+      "station": "ridge-a",
+      "day": "2026-11-10",
+      "generation": 1,
+      "chunks": [
+        {
+          "name": "a",
+          "path": "/chunks/old-a",
+          "sha256": "3b9905a7cff68d89e4476cf8c41ea85b95674135eef8718cf78b2425cb375812"
+        }
+      ]
+    },
+    {
+      "station": "valley-b",
+      "day": "2026-11-10",
+      "generation": 1,
+      "chunks": [
+        {
+          "name": "a",
+          "path": "/chunks/a",
+          "sha256": "272b13e1be1a615f124541c4574aebeb709e41335083adcacd3d3e4e8bffc275"
+        }
+      ]
+    }
+  ],
+  "portal": {
+    "csrf": "form-2026-b"
+  },
+  "routes": {
+    "/feed": {
+      "json": {
+        "items": [
+          {
+            "station": "ridge-a",
+            "day": "2026-11-10",
+            "generation": 2,
+            "chunks": [
+              {
+                "name": "a",
+                "path": "/chunks/a",
+                "sha256": "272b13e1be1a615f124541c4574aebeb709e41335083adcacd3d3e4e8bffc275"
+              },
+              {
+                "name": "b",
+                "path": "/chunks/b",
+                "sha256": "45a974786e891354b0953aef01336998f8f5cd22867c3117d52a118b92d125b5"
+              }
+            ],
+            "window_seconds": 20
+          },
+          {
+            "station": "ridge-a",
+            "day": "2026-11-10",
+            "generation": 1,
+            "chunks": [
+              {
+                "name": "a",
+                "path": "/chunks/old-a",
+                "sha256": "3b9905a7cff68d89e4476cf8c41ea85b95674135eef8718cf78b2425cb375812"
+              }
+            ]
+          },
+          {
+            "station": "valley-b",
+            "day": "2026-11-10",
+            "generation": 1,
+            "chunks": [
+              {
+                "name": "a",
+                "path": "/chunks/a",
+                "sha256": "272b13e1be1a615f124541c4574aebeb709e41335083adcacd3d3e4e8bffc275"
+              }
+            ]
+          }
+        ]
+      },
+      "headers": {
+        "ETag": "feed-1"
+      }
+    },
+    "/rate-limited": {
+      "status": 429,
+      "headers": {
+        "Retry-After": "2"
+      },
+      "json": {
+        "error": "quota"
+      }
+    },
+    "/unstable": [
+      {
+        "status": 503,
+        "body": "temporarily unavailable"
+      },
+      {
+        "json": {
+          "items": []
+        }
+      }
+    ],
+    "/range": {
+      "body": "0123456789",
+      "range": true
+    },
+    "/range-ignored": {
+      "body": "0123456789"
+    },
+    "/truncated": {
+      "body": "partial",
+      "truncate": true
+    },
+    "/chunks/a": {
+      "body": "ridge,2026-11-10T08:00Z,12.2\n",
+      "content_type": "text/plain"
+    },
+    "/chunks/b": {
+      "body": "ridge,2026-11-10T09:00Z,12.5\n",
+      "content_type": "text/plain"
+    },
+    "/chunks/old-a": {
+      "body": "ridge,2026-11-10T08:00Z,11.9\n",
+      "content_type": "text/plain"
+    },
+    "/observations/1": {
+      "json": {
+        "items": [
+          {
+            "station": "ridge-a",
+            "day": "2026-11-10",
+            "generation": 2,
+            "chunks": [
+              {
+                "name": "a",
+                "path": "/chunks/a",
+                "sha256": "272b13e1be1a615f124541c4574aebeb709e41335083adcacd3d3e4e8bffc275"
+              },
+              {
+                "name": "b",
+                "path": "/chunks/b",
+                "sha256": "45a974786e891354b0953aef01336998f8f5cd22867c3117d52a118b92d125b5"
+              }
+            ],
+            "window_seconds": 20
+          }
+        ]
+      }
+    },
+    "/observations/2": {
+      "json": {
+        "items": [
+          {
+            "station": "ridge-a",
+            "day": "2026-11-10",
+            "generation": 1,
+            "chunks": [
+              {
+                "name": "a",
+                "path": "/chunks/old-a",
+                "sha256": "3b9905a7cff68d89e4476cf8c41ea85b95674135eef8718cf78b2425cb375812"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "/observations/3": {
+      "json": {
+        "items": [
+          {
+            "station": "valley-b",
+            "day": "2026-11-10",
+            "generation": 1,
+            "chunks": [
+              {
+                "name": "a",
+                "path": "/chunks/a",
+                "sha256": "272b13e1be1a615f124541c4574aebeb709e41335083adcacd3d3e4e8bffc275"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
