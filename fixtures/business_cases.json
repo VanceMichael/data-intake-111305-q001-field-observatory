@@ -1,17 +1,17 @@
 [
   {
-    "name": "new_manifest_before_old_chunk",
-    "situation": "二代清单先到，一代内容后到",
-    "observable": "二代缺块不因收到旧块而闭合"
+    "name": "persist_before_ack",
+    "situation": "归档后确认前退出",
+    "observable": "重发确认不重复形成观测"
   },
   {
-    "name": "reclaim_after_disconnect",
-    "situation": "两名接收者遇到断线与租约交接",
-    "observable": "仅当前持有者能够发布，已验块可重用"
+    "name": "unavailable_gap",
+    "situation": "缺失序号不在重传队列",
+    "observable": "保留不可补收缺口，不造历史值"
   },
   {
-    "name": "bad_digest",
-    "situation": "长度一致但内容摘要不符",
-    "observable": "留下损坏证据，不能归档"
+    "name": "handle_reuse",
+    "situation": "订阅重建并复用监控句柄",
+    "observable": "旧通知不绑定到新传感器"
   }
 ]

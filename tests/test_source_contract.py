@@ -13,12 +13,11 @@ class SourceContractTests(unittest.TestCase):
         records = scenario["source_records"]
         with serve(scenario) as origin:
             client = Client(origin.base_url)
-            manifest = records[0]
-            self.assertEqual(manifest["generation"], 2)
-            for chunk in manifest["chunks"]:
-                response = client.fetch(chunk["path"])
-                self.assertEqual(hashlib.sha256(response.body).hexdigest(), chunk["sha256"])
-            self.assertNotEqual(records[0]["generation"], records[1]["generation"])
+            self.assertEqual(records[0]["subscription_id"], records[2]["subscription_id"])
+            self.assertNotEqual(records[0]["subscription_generation"], records[2]["subscription_generation"])
+            self.assertTrue(records[2]["keepalive"])
+            self.assertEqual(records[2]["notifications"], [])
+            self.assertEqual(json.loads(client.fetch("/republish/g1/2").body)["status"], "BadMessageNotAvailable")
 
     def test_every_record_has_the_declared_source_identity(self):
         scenario = load_scenario()
