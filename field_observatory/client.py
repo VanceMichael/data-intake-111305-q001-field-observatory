@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from urllib.error import HTTPError
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urlencode, urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 
@@ -12,6 +12,11 @@ class Response:
     body: bytes
 
 
+def _check_path(path):
+    if not path.startswith("/") or path.startswith("//") or urlsplit(path).netloc:
+        raise ValueError("source path must be origin-relative")
+
+
 class Client:
     def __init__(self, base_url, timeout=3):
         parsed = urlsplit(base_url)
@@ -20,10 +25,7 @@ class Client:
         self.base_url = base_url.rstrip("/") + "/"
         self.timeout = timeout
 
-    def fetch(self, path, headers=None):
-        if not path.startswith("/") or path.startswith("//") or urlsplit(path).netloc:
-            raise ValueError("source path must be origin-relative")
-        request = Request(urljoin(self.base_url, path), headers=dict(headers or {}))
+    def _send(self, request):
         try:
             response = urlopen(request, timeout=self.timeout)
         except HTTPError as error:
@@ -34,6 +36,15 @@ class Client:
                 {name.lower(): value for name, value in response.headers.items()},
                 response.read(),
             )
+
+    def fetch(self, path, headers=None):
+        _check_path(path)
+        return self._send(Request(urljoin(self.base_url, path), headers=dict(headers or {})))
+
+    def post_form(self, path, fields):
+        _check_path(path)
+        data = urlencode({name: str(value) for name, value in fields.items()}).encode()
+        return self._send(Request(urljoin(self.base_url, path), data=data))
 
 
 def collect(client, archive, source, path="/feed"):

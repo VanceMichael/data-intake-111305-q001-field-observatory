@@ -27,3 +27,9 @@
 ## 领域接入契约
 
 网关将 OPC UA SDK 的 Publish/Republish 响应转换为本项目 JSON 信封。subscription_generation 是网关持久代际，不是 OPC UA 标准字段。序号为非零32位计数，回绕到1；keepalive 不是数据通知。available 只说明服务器当前重传队列。确认命令应写入本地可审计发送队列，演练端可按请求账本检查顺序；不进行真实设备控制。参考 OPC 10000-4 的 Publish 与 Republish 服务。
+
+## 确认账本
+
+接收程序把通知持久化后，通过 POST `/acks`（表单字段 `gateway`、`generation`、`sequence`）向演练网关发送确认；网关按到达顺序把确认记入请求账本，字段缺失或序号越界返回422。GET `/acks` 返回已记录的确认列表。该端点只用于本地演练核对“先写后确认”的顺序，不连接真实设备。
+
+Republish 成功时响应为通知信封本体（与 `/feed` 数组元素同构）；服务器已把报文移出重传队列时响应 `{"status": "BadMessageNotAvailable", "subscription_generation": ..., "sequence": ...}`，接收端据此登记永久缺口，不造历史值。

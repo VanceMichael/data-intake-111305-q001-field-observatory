@@ -152,6 +152,28 @@ class ProtocolTests(unittest.TestCase):
             response = Client(origin.base_url).fetch("/portal/status?id=A1")
             self.assertEqual(json.loads(response.body)["receipt"], "ACK-1")
 
+    def test_ack_ledger_records_order_and_rejects_invalid(self):
+        with serve() as origin:
+            client = Client(origin.base_url)
+            first = client.post_form("/acks", {"gateway": "station-a", "generation": "g1", "sequence": 3})
+            second = client.post_form("/acks", {"gateway": "station-a", "generation": "g1", "sequence": 1})
+            self.assertEqual((first.status, second.status), (200, 200))
+            ledger = json.loads(client.fetch("/acks").body)["acks"]
+            self.assertEqual([entry["sequence"] for entry in ledger], [3, 1])
+            for fields in (
+                {"gateway": "", "generation": "g1", "sequence": 1},
+                {"gateway": "station-a", "generation": "g1", "sequence": 0},
+                {"gateway": "station-a", "generation": "g1", "sequence": "abc"},
+            ):
+                with self.subTest(fields=fields):
+                    self.assertEqual(client.post_form("/acks", fields).status, 422)
+            self.assertEqual(len(json.loads(client.fetch("/acks").body)["acks"]), 2)
+
+    def test_post_form_requires_origin_relative_path(self):
+        client = Client("http://127.0.0.1:1")
+        with self.assertRaises(ValueError):
+            client.post_form("https://example.invalid/acks", {})
+
 
 class DecoderTests(unittest.TestCase):
     def test_json_requires_record_objects(self):

@@ -25,6 +25,7 @@ class Origin(ThreadingHTTPServer):
         self.offsets = {}
         self.requests = []
         self.receipts = {}
+        self.acks = []
         self.state_lock = threading.Lock()
         super().__init__(("127.0.0.1", 0), Handler)
 
@@ -57,6 +58,10 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/portal/status":
                 identity = parse_qs(urlsplit(self.path).query).get("id", [""])[0]
                 payload = {"id": identity, "receipt": self.server.receipts.get(identity)}
+                self.send_payload(200, {"Content-Type": "application/json"}, json.dumps(payload).encode())
+                return
+            if path == "/acks":
+                payload = {"acks": self.server.acks}
                 self.send_payload(200, {"Content-Type": "application/json"}, json.dumps(payload).encode())
                 return
             choices = self.server.scenario["routes"].get(path, {"status": 404, "body": "unknown route"})
@@ -108,7 +113,20 @@ class Handler(BaseHTTPRequestHandler):
         fields = {name: values[0] for name, values in parse_qs(raw.decode()).items()}
         with self.server.state_lock:
             self.server.requests.append({"method": "POST", "path": path, "fields": fields})
-            if path != "/portal/submit":
+            if path == "/acks":
+                gateway = fields.get("gateway", "").strip()
+                generation = fields.get("generation", "").strip()
+                try:
+                    sequence = int(fields.get("sequence", ""))
+                except ValueError:
+                    sequence = 0
+                if not gateway or not generation or not 1 <= sequence <= 0xFFFFFFFF:
+                    status, payload = 422, {"error": "invalid_ack"}
+                else:
+                    entry = {"gateway": gateway, "generation": generation, "sequence": sequence}
+                    self.server.acks.append(entry)
+                    status, payload = 200, {"recorded": len(self.server.acks)}
+            elif path != "/portal/submit":
                 status, payload = 404, {"error": "unknown_form"}
             elif fields.get("csrf") != self.server.scenario["portal"]["csrf"]:
                 status, payload = 409, {"error": "stale_form"}
